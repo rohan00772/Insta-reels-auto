@@ -1,134 +1,215 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reel + Shorts Player</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Pro Multi Video Player</title>
 
 <style>
-body{
+
+*{
   margin:0;
-  background:#0f172a;
-  font-family:Arial;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  font-family:Arial, sans-serif;
+  background:#0b1120;
   color:white;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  height:100vh;
+  overflow:hidden;
 }
 
-.box{
-  width:420px;
-  background:#1e293b;
-  padding:20px;
-  border-radius:12px;
+.bg{
+  position:fixed;
+  inset:0;
+  background:
+  radial-gradient(circle at top left,#ff005533,transparent 30%),
+  radial-gradient(circle at bottom right,#00d0ff22,transparent 30%),
+  #0b1120;
 }
 
-h2{
-  text-align:center;
-}
-
-textarea,input,select{
+.container{
+  position:relative;
+  z-index:2;
   width:100%;
-  margin-top:10px;
-  padding:10px;
+  height:100vh;
+  display:flex;
+  flex-direction:column;
+  padding:20px;
+}
+
+.topbar{
+  width:100%;
+  background:#111827cc;
+  backdrop-filter:blur(10px);
+  border:1px solid #ffffff11;
+  border-radius:18px;
+  padding:20px;
+  box-shadow:0 0 30px rgba(0,0,0,0.4);
+}
+
+h1{
+  text-align:center;
+  margin-bottom:15px;
+  font-size:28px;
+}
+
+.controls{
+  display:grid;
+  grid-template-columns:1fr 150px 120px;
+  gap:12px;
+}
+
+textarea,
+input,
+select{
+  background:#1e293b;
   border:none;
-  border-radius:8px;
+  color:white;
+  border-radius:12px;
+  padding:12px;
+  outline:none;
+  resize:none;
 }
 
 button{
-  width:100%;
   margin-top:15px;
-  padding:12px;
+  width:100%;
   border:none;
-  border-radius:8px;
-  background:#ff0033;
+  border-radius:12px;
+  padding:14px;
+  background:linear-gradient(45deg,#ff0055,#ff3c82);
   color:white;
   font-size:16px;
   cursor:pointer;
+  transition:0.3s;
 }
+
+button:hover{
+  transform:scale(1.02);
+}
+
+.playerArea{
+  flex:1;
+  margin-top:20px;
+  overflow:auto;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(300px,1fr));
+  gap:16px;
+  padding-bottom:20px;
+}
+
+.card{
+  background:#111827;
+  border-radius:18px;
+  overflow:hidden;
+  border:1px solid #ffffff10;
+  box-shadow:0 0 20px rgba(0,0,0,0.3);
+  height:520px;
+  position:relative;
+}
+
+.card iframe{
+  width:100%;
+  height:100%;
+  border:none;
+}
+
+.label{
+  position:absolute;
+  top:10px;
+  left:10px;
+  background:#00000099;
+  padding:6px 10px;
+  border-radius:20px;
+  font-size:12px;
+  z-index:10;
+}
+
 </style>
 </head>
 
 <body>
 
-<div class="box">
+<div class="bg"></div>
 
-<h2>Multi Video Launcher</h2>
+<div class="container">
 
-<select id="platform">
-  <option value="youtube">YouTube Shorts</option>
-  <option value="instagram">Instagram Reels</option>
-</select>
+  <div class="topbar">
 
-<textarea id="links" rows="6"
-placeholder="Paste Links Here"></textarea>
+    <h1>PRO Multi Reel Player</h1>
 
-<input type="number" id="count" value="2" min="1">
+    <div class="controls">
 
-<button onclick="start()">START</button>
+      <textarea
+      id="links"
+      rows="5"
+      placeholder="Paste YouTube Shorts or Instagram Reel Links"></textarea>
+
+      <select id="platform">
+        <option value="youtube">YouTube Shorts</option>
+        <option value="instagram">Instagram Reels</option>
+      </select>
+
+      <input
+      type="number"
+      id="count"
+      value="4"
+      min="1"/>
+
+    </div>
+
+    <button onclick="startPlayers()">
+      START PLAYING
+    </button>
+
+  </div>
+
+  <div class="playerArea" id="playerArea"></div>
 
 </div>
 
 <script>
 
-function getYoutubeEmbed(url){
+function getYoutubeID(url){
 
-  let id = "";
-
-  // shorts
   if(url.includes("/shorts/")){
-    id = url.split("/shorts/")[1].split("?")[0];
+    return url.split("/shorts/")[1].split("?")[0];
   }
 
-  // normal youtube
-  else if(url.includes("v=")){
-    id = url.split("v=")[1].split("&")[0];
+  if(url.includes("v=")){
+    return url.split("v=")[1].split("&")[0];
   }
 
-  return `
-    <html>
-    <body style="margin:0;background:black;">
-      <iframe
-      width="100%"
-      height="100%"
-      src="https://www.youtube.com/embed/${id}?autoplay=1&mute=1"
-      frameborder="0"
-      allow="autoplay"
-      allowfullscreen>
-      </iframe>
-    </body>
-    </html>
-  `;
+  return "";
 }
 
-function getInstagramPage(url){
+function getInstagramEmbed(url){
 
-  return `
-    <html>
-    <body style="margin:0;background:black;display:flex;justify-content:center;align-items:center;height:100vh;color:white;font-family:Arial;">
-      <div>
-        <h2>Instagram Direct Play Limited</h2>
-        <p>Browser me open ho raha hai...</p>
-        <a href="${url}" target="_blank" style="color:pink;">
-          Open Reel
-        </a>
-      </div>
-    </body>
-    </html>
-  `;
+  if(!url.endsWith("/")){
+    url += "/";
+  }
+
+  return url + "embed";
 }
 
-function start(){
+function startPlayers(){
 
-  let platform =
-    document.getElementById("platform").value;
+  let area =
+    document.getElementById("playerArea");
+
+  area.innerHTML = "";
 
   let links =
     document.getElementById("links")
     .value
     .trim()
     .split("\n");
+
+  let platform =
+    document.getElementById("platform").value;
 
   let count =
     parseInt(
@@ -140,25 +221,45 @@ function start(){
     let url =
       links[i % links.length].trim();
 
-    let win =
-      window.open(
-        "",
-        "_blank",
-        `width=500,height=700,left=${i*40},top=${i*40}`
-      );
+    let card =
+      document.createElement("div");
+
+    card.className = "card";
+
+    let label =
+      document.createElement("div");
+
+    label.className = "label";
+
+    label.innerText =
+      platform === "youtube"
+      ? "YouTube Shorts"
+      : "Instagram Reel";
+
+    let iframe =
+      document.createElement("iframe");
+
+    iframe.allow =
+      "autoplay";
 
     if(platform === "youtube"){
 
-      win.document.write(
-        getYoutubeEmbed(url)
-      );
+      let id =
+        getYoutubeID(url);
+
+      iframe.src =
+        `https://www.youtube.com/embed/${id}?autoplay=1&mute=1`;
 
     }else{
 
-      win.document.write(
-        getInstagramPage(url)
-      );
+      iframe.src =
+        getInstagramEmbed(url);
     }
+
+    card.appendChild(label);
+    card.appendChild(iframe);
+
+    area.appendChild(card);
   }
 }
 
