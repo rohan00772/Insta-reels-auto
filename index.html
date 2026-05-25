@@ -1,130 +1,123 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Instagram Multi Window Launcher</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instagram Reel Player</title>
 
-  <style>
-    body{
-      margin:0;
-      padding:0;
-      background:#0f172a;
-      font-family:Arial, sans-serif;
-      color:white;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      height:100vh;
-    }
+<style>
+body{
+  margin:0;
+  background:#0f172a;
+  font-family:Arial;
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
 
-    .box{
-      width:400px;
-      background:#1e293b;
-      padding:20px;
-      border-radius:12px;
-      box-shadow:0 0 15px rgba(0,0,0,0.5);
-    }
+.box{
+  width:400px;
+  background:#1e293b;
+  padding:20px;
+  border-radius:12px;
+}
 
-    h2{
-      text-align:center;
-      margin-bottom:20px;
-    }
+textarea,input{
+  width:100%;
+  margin-top:10px;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+}
 
-    textarea,input{
-      width:100%;
-      margin-top:10px;
-      padding:10px;
-      border:none;
-      border-radius:8px;
-      font-size:14px;
-      outline:none;
-    }
-
-    button{
-      width:100%;
-      padding:12px;
-      margin-top:15px;
-      border:none;
-      border-radius:8px;
-      background:#e1306c;
-      color:white;
-      font-size:16px;
-      cursor:pointer;
-    }
-
-    button:hover{
-      background:#ff4f8b;
-    }
-
-    .note{
-      margin-top:10px;
-      font-size:12px;
-      color:#cbd5e1;
-    }
-  </style>
+button{
+  width:100%;
+  margin-top:15px;
+  padding:12px;
+  border:none;
+  border-radius:8px;
+  background:#e1306c;
+  color:white;
+  font-size:16px;
+  cursor:pointer;
+}
+</style>
 </head>
 
 <body>
 
 <div class="box">
 
-  <h2>Instagram Multi Window</h2>
+<h2>Instagram Reel Auto Player</h2>
 
-  <label>Instagram Links</label>
+<textarea id="links" rows="6"
+placeholder="Paste Reel Links Here"></textarea>
 
-  <textarea id="links" rows="6"
-  placeholder="https://instagram.com
-https://instagram.com/example"></textarea>
+<input type="number" id="count" value="2" min="1">
 
-  <label>Kitni Window Open Karni Hai?</label>
-
-  <input type="number" id="count" value="2" min="1">
-
-  <button onclick="startOpen()">
-    START
-  </button>
-
-  <div class="note">
-    Browser popup blocker OFF hona chahiye
-  </div>
+<button onclick="openReels()">START</button>
 
 </div>
 
 <script>
 
-function startOpen(){
+function convertToEmbed(url){
 
-  let linksText =
+  url = url.trim();
+
+  if(url.includes("/reel/")){
+    return url + "embed";
+  }
+
+  return url;
+}
+
+function openReels(){
+
+  let text =
     document.getElementById("links").value.trim();
 
   let count =
     parseInt(document.getElementById("count").value);
 
-  if(!linksText){
-    alert("Instagram links daalo");
+  if(!text){
+    alert("Links daalo");
     return;
   }
 
-  let links =
-    linksText.split("\n");
+  let links = text.split("\n");
 
-  for(let i=0; i<count; i++){
+  for(let i=0;i<count;i++){
 
     let url =
-      links[i % links.length];
+      convertToEmbed(
+        links[i % links.length]
+      );
 
-    let left = i * 40;
-    let top  = i * 40;
-
-    window.open(
-      url,
+    let win = window.open(
+      "",
       "_blank",
-      `width=500,height=700,left=${left},top=${top}`
+      `width=500,height=700,left=${i*40},top=${i*40}`
     );
-  }
 
-  alert(count + " windows open ho gayi");
+    win.document.write(`
+      <html>
+      <body style="margin:0;background:black;display:flex;justify-content:center;align-items:center;height:100vh;">
+      
+      <iframe
+        src="${url}"
+        width="100%"
+        height="100%"
+        frameborder="0"
+        allowfullscreen>
+      </iframe>
+
+      </body>
+      </html>
+    `);
+  }
 }
 
 </script>
