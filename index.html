@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Insta Reel No Login</title>
+<title>Reel + Shorts Player</title>
 
 <style>
 body{
   margin:0;
   background:#0f172a;
-  color:white;
   font-family:Arial;
+  color:white;
   display:flex;
   justify-content:center;
   align-items:center;
@@ -18,13 +18,17 @@ body{
 }
 
 .box{
-  width:400px;
+  width:420px;
   background:#1e293b;
   padding:20px;
   border-radius:12px;
 }
 
-textarea,input{
+h2{
+  text-align:center;
+}
+
+textarea,input,select{
   width:100%;
   margin-top:10px;
   padding:10px;
@@ -38,8 +42,9 @@ button{
   padding:12px;
   border:none;
   border-radius:8px;
-  background:#e1306c;
+  background:#ff0033;
   color:white;
+  font-size:16px;
   cursor:pointer;
 }
 </style>
@@ -49,66 +54,111 @@ button{
 
 <div class="box">
 
-<h2>No Login Reel Player</h2>
+<h2>Multi Video Launcher</h2>
+
+<select id="platform">
+  <option value="youtube">YouTube Shorts</option>
+  <option value="instagram">Instagram Reels</option>
+</select>
 
 <textarea id="links" rows="6"
-placeholder="Paste Reel Links"></textarea>
+placeholder="Paste Links Here"></textarea>
 
 <input type="number" id="count" value="2" min="1">
 
-<button onclick="playReels()">START</button>
+<button onclick="start()">START</button>
 
 </div>
 
 <script>
 
-function convert(url){
+function getYoutubeEmbed(url){
 
-  url = url.trim();
+  let id = "";
 
-  // extract reel id
-  let match = url.match(/reel\/([^\/]+)/);
-
-  if(match){
-
-    let id = match[1];
-
-    // anonymous viewer
-    return `https://www.ddinstagram.com/reel/${id}`;
+  // shorts
+  if(url.includes("/shorts/")){
+    id = url.split("/shorts/")[1].split("?")[0];
   }
 
-  return url;
+  // normal youtube
+  else if(url.includes("v=")){
+    id = url.split("v=")[1].split("&")[0];
+  }
+
+  return `
+    <html>
+    <body style="margin:0;background:black;">
+      <iframe
+      width="100%"
+      height="100%"
+      src="https://www.youtube.com/embed/${id}?autoplay=1&mute=1"
+      frameborder="0"
+      allow="autoplay"
+      allowfullscreen>
+      </iframe>
+    </body>
+    </html>
+  `;
 }
 
-function playReels(){
+function getInstagramPage(url){
 
-  let text =
-    document.getElementById("links").value.trim();
+  return `
+    <html>
+    <body style="margin:0;background:black;display:flex;justify-content:center;align-items:center;height:100vh;color:white;font-family:Arial;">
+      <div>
+        <h2>Instagram Direct Play Limited</h2>
+        <p>Browser me open ho raha hai...</p>
+        <a href="${url}" target="_blank" style="color:pink;">
+          Open Reel
+        </a>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+function start(){
+
+  let platform =
+    document.getElementById("platform").value;
+
+  let links =
+    document.getElementById("links")
+    .value
+    .trim()
+    .split("\n");
 
   let count =
     parseInt(
       document.getElementById("count").value
     );
 
-  if(!text){
-    alert("Links daalo");
-    return;
-  }
-
-  let links = text.split("\n");
-
   for(let i=0;i<count;i++){
 
     let url =
-      convert(
-        links[i % links.length]
+      links[i % links.length].trim();
+
+    let win =
+      window.open(
+        "",
+        "_blank",
+        `width=500,height=700,left=${i*40},top=${i*40}`
       );
 
-    window.open(
-      url,
-      "_blank",
-      `width=500,height=700,left=${i*40},top=${i*40}`
-    );
+    if(platform === "youtube"){
+
+      win.document.write(
+        getYoutubeEmbed(url)
+      );
+
+    }else{
+
+      win.document.write(
+        getInstagramPage(url)
+      );
+    }
   }
 }
 
